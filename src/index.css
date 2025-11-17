@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #000;
+  --text: #fff;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@theme {
+  --animate-fadeIn: fadeIn 2s ease-out forwards;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulseGlow: pulseGlow 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+/* Apply animation and stacking context to elements that should pulse/float */
+.pulse {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  animation: fadeIn 2s ease-out, float 6s ease-in-out infinite;
+  animation-delay: 0s, 2s;
+}
+
+/* Simple fadeIn so referenced animations exist */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-30px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.tagline {
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  margin-top: 30px;
+  opacity: 0;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  animation: fadeIn 2s ease-out 0.5s forwards;
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  animation: fadeIn 2s ease-out 1s forwards, bounce 2s ease-in-out infinite;
+  animation-delay: 1s, 3s;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(10px);
+  }
+}
+
+.scroll-indicator::before {
+  content: '↓';
+  font-size: 2rem;
+  opacity: 0.6;
+}
+
+.container {
+  @apply max-w-[1400px] mx-auto px-5 py-10;
+}
+
+.stats {
+  @apply flex justify-center flex-wrap gap-[100px] py-[100px] px-5 opacity-0;
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.stat {
+  @apply text-center;
+}
+
+.stat-number {
+  @apply text-[4rem] font-black block mb-4;
+}
+
+.stat-label {
+  @apply text-sm uppercase opacity-60 tracking-[0.2em];
+}
+
+.music-section {
+  @apply py-[100px];
+}
+
+.track-card {
+  background: #000;
+  border: 1px solid #222;
+  padding: 50px 40px;
+  transition: all 0.4s ease;
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.tracks-grid {
+  @apply grid gap-10 px-5;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.track-card {
+  background: #111;
+  border: 1px solid #333;
+  padding: 50px 40px;
+  transition: all 0.4s ease;
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.track-card:hover {
+  background: #1a1a1a;
+  border-color: #fff;
+  transform: translateY(-5px);
+}
+
+.track-type {
+  @apply text-xs uppercase opacity-50 tracking-[0.15em] mb-5;
+}
+
+.track-title {
+  @apply text-[2rem] font-bold mb-8 leading-[1.2];
+}
+
+.play-button {
+  @apply inline-flex items-center gap-3 bg-white text-black px-9 py-4 font-bold uppercase text-sm tracking-[0.1em] transition-all;
+}
+
+.play-button:hover {
+  @apply bg-black text-white outline outline-2 outline-white;
+}
+
+.spotify-link {
+  @apply text-center py-[100px] px-5 opacity-0;
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.spotify-button {
+  @apply inline-flex items-center gap-4 bg-[#1DB954] text-white px-[60px] py-[25px] text-[1.3rem] font-bold uppercase tracking-[0.05em] transition-all;
+}
+
+.spotify-button:hover {
+  background: #1ed760;
+  transform: scale(1.05);
+}
+
+footer {
+  @apply text-center py-[80px] px-5 opacity-40 text-sm tracking-[0.1em];
+}

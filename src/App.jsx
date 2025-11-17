@@ -8,122 +8,110 @@ import Socials from "./components/Socials";
 import cover from './photos/cover.jpeg';
 
 
-// make parallax mobile-friendly: reduce/disable movement on small screens, cover photo is a fixed background on small screens
-if (typeof document !== "undefined") {
-  (function setupMobileCoverStyles() {
-    const STYLE_ID = "app-full-cover-mobile-styles";
-    if (document.getElementById(STYLE_ID)) return;
+import { useEffect } from "react";
 
-    const style = document.createElement("style");
-    style.id = STYLE_ID;
-    style.textContent = `
-      /* disable JS-driven transforms and use fixed background on small screens */
-      @media (max-width: 640px) {
-        #app-full-cover {
-          background-attachment: fixed !important;
-          transform: none !important;
-          will-change: auto !important;
-          pointer-events: none !important;
-          background-position: center center !important;
-        }
-      }
+// --- MOBILE/RESPONSIVE COVER FIXED + PARALLAX HYBRID ------------------------
+function useCoverParallax() {
+  useEffect(() => {
+    if (typeof document === "undefined") return;
 
-      /* reduce parallax intensity on small/medium screens if JS still applies transforms */
-      @media (min-width: 641px) and (max-width: 1024px) {
-        #app-full-cover {
-          will-change: transform;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-
-    // optional: keep a small-screen flag on <html> for other runtime checks
-    const mq = window.matchMedia("(max-width: 640px)");
-    const onChange = () => {
-      if (mq.matches) document.documentElement.classList.add("app-cover-fixed");
-      else document.documentElement.classList.remove("app-cover-fixed");
-    };
-    if (mq.addEventListener) mq.addEventListener("change", onChange);
-    else mq.addListener(onChange);
-    onChange();
-  })();
-}
-
-// create a full-viewport cover element with a subtle parallax/scale on scroll
-if (typeof document !== "undefined") {
-  try {
     const coverEl = document.createElement("div");
     coverEl.id = "app-full-cover";
-    coverEl.style.cssText = [
-      "position:fixed",
-      "inset:0",
-      "height:100vh",
-      "width:100%",
-      "background-repeat:no-repeat",
-      "background-size:cover",
-      "background-position:center center",
-      `background-image:url(${cover})`,
-      "pointer-events:none",
-      "will-change:transform",
-      "z-index:-1",
-      "transform-origin:center",
-    ].join(";");
 
-    // put it behind your app content
+    coverEl.style.cssText = `
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100dvh; /* better than 100vh on mobile */
+      background-image: url(${cover});
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: -1;
+      pointer-events: none;
+      transform-origin: bottom;
+    `;
+
     document.body.prepend(coverEl);
 
-    let ticking = false;
-    const speed = 0.15; // parallax factor (tweak)
-    const scaleFactor = 0.0004; // subtle scale on scroll (tweak)
+    const isMobile =
+      window.matchMedia("(max-width: 768px)").matches ||
+      /iPhone|Android|Mobile|iPad/.test(navigator.userAgent);
 
-    function onScroll() {
-      const y = window.scrollY || window.pageYOffset || 0;
+    // --- Mobile Mode: Fullscreen static cover -------------------------
+    if (isMobile) {
+      coverEl.style.transform = "none";
+      coverEl.style.willChange = "auto";
+      coverEl.style.backgroundAttachment = "scroll"; // stable on iOS
+
+      // prevent cropping on tall mobile screens
+      coverEl.style.backgroundSize = "cover";
+      coverEl.style.backgroundPosition = "center center";
+
+      // No scroll handlers
+      window.addEventListener(
+        "scroll",
+        () => {
+          coverEl.style.transform = "none";
+        },
+        { passive: true }
+      );
+
+      // cleanup for mobile
+      return () => {
+        coverEl.remove();
+        window.removeEventListener("scroll", () => {
+          coverEl.style.transform = "none";
+        });
+      };
+    }
+
+    // --- Desktop Mode: Smooth parallax --------------------------------
+    let ticking = false;
+    const speed = 0.18;
+    const scaleFactor = 0.00032;
+
+    function applyParallax() {
+      const y = window.scrollY || 0;
       const translateY = Math.round(y * speed);
       const scale = 1 + y * scaleFactor;
       coverEl.style.transform = `translate3d(0, ${translateY}px, 0) scale(${scale})`;
     }
 
-    function rafScroll() {
+    function handleScroll() {
       if (!ticking) {
         ticking = true;
         requestAnimationFrame(() => {
-          onScroll();
+          applyParallax();
           ticking = false;
         });
       }
     }
 
-    // initialize position (in case page is loaded scrolled)
-    onScroll();
+    applyParallax();
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
-    window.addEventListener("scroll", rafScroll, { passive: true });
+    // ensure proper recalculation on resize
+    const ro = new ResizeObserver(applyParallax);
+    ro.observe(document.documentElement);
 
-    // keep element responsive if cover or window resizes
-    const resizeObserver = new ResizeObserver(() => onScroll());
-    resizeObserver.observe(document.documentElement);
-
-    // cleanup for HMR / page unload
-    const cleanup = () => {
-      window.removeEventListener("scroll", rafScroll);
-      resizeObserver.disconnect();
-      if (coverEl && coverEl.parentNode) coverEl.parentNode.removeChild(coverEl);
+    // cleanup for HMR and unmount
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      ro.disconnect();
+      coverEl.remove();
     };
-    window.addEventListener("beforeunload", cleanup);
-    // also expose for runtime cleanup (optional)
-    if (import.meta && import.meta.hot && import.meta.hot.dispose) {
-      import.meta.hot.dispose(cleanup);
-    }
-  } catch (e) {
-    // fail silently in environments without DOM
-    // console.warn("Cover initialization failed", e);
-  }
+  }, []);
 }
 
+
 function App() {
+  useCoverParallax();
+
   return (
     <div className="App">
       <Hero />
-<div className="mx-auto max-w-[1400px] px-4 sm:px-6">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
         <Stats />
         <MusicSection />
         <SpotifyLink />

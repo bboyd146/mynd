@@ -33,9 +33,9 @@ export default function MusicSection() {
 
       <section className="mb-16 flex justify-center">
         <div className="w-full max-w-2xl">
-<div className="relative w-full pb-[36%] bg-black rounded-lg overflow-hidden">
+<div className="relative w-full pb-[36%] overflow-hidden">
   <iframe
-    className="absolute top-0 left-0 w-full h-full"
+    className="absolute top-0 left-0 w-full h-full "
     src="https://embed.tidal.com/tracks/351813392"
     allow="encrypted-media; fullscreen; clipboard-write"
     sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
